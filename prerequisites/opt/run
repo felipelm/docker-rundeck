@@ -1,0 +1,98 @@
+#!/bin/bash
+
+set -e
+
+initfile=/etc/rundeck.init
+
+chmod 1777 /tmp
+
+# chown directories and files that might be coming from volumes
+chown -R mysql:mysql /var/lib/mysql
+chown -R rundeck:rundeck /etc/rundeck
+chown -R rundeck:rundeck /var/rundeck
+chown -R rundeck:adm /var/log/rundeck
+chown -R rundeck:rundeck /var/lib/rundeck
+chown -R rundeck:rundeck /opt/rundeck-properties
+
+
+if [ ! -f "${initfile}" ]; then
+   SERVER_URL=${SERVER_URL:-"http://0.0.0.0:4440"}
+   DATABASE_URL=${DATABASE_URL:-"jdbc:mysql://localhost/rundeckdb?autoReconnect=true"}
+   RUNDECK_PASSWORD=${RUNDECK_PASSWORD:-$(pwgen -s 15 1)}
+   DEBIAN_SYS_MAINT_PASSWORD=${DEBIAN_SYS_MAINT_PASSWORD:-$(pwgen -s 15 1)}
+   
+update_user_password () {
+   (
+   echo "UPDATE mysql.user SET password=PASSWORD('${2}') WHERE user='${1}';"
+   echo "FLUSH PRIVILEGES;"
+   echo "quit"
+   ) |
+   mysql
+}
+
+   echo "=>Initializing rundeck - This may take a few minutes"
+   if [ ! -f /var/lib/rundeck/.ssh/id_rsa ]; then
+       echo "=>Generating rundeck key"
+       sudo -u rundeck ssh-keygen -t rsa -f /var/lib/rundeck/.ssh/id_rsa -N ''
+   fi
+   
+   if [ "$(ls -A /etc/rundeck)" ]; then
+       echo "=>/etc/rundeck check OK"
+   else
+       echo "=>/etc/rundeck empty...setting up defaults"
+       cp -R /opt/rundeck-properties/* /etc/rundeck
+       chown -R rundeck:rundeck /etc/rundeck
+   fi
+
+# Copy all plugins that are available on top of default and chowing those
+
+   cp -R /opt/rundeck-plugins/* /var/lib/rundeck/libext
+   chown -R rundeck:rundeck /var/lib/rundeck/libext
+
+   if [ "$(ls -A /var/lib/mysql)" ]; then
+       /etc/init.d/mysql start
+   else
+       echo "=>MySQL datadir is empty...initializing"
+       /usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+       echo "=>Starting MySQL...ignore warning about debian-sys-maint user, it will be granted permissions momentarily"
+       /etc/init.d/mysql start
+       sleep 5
+       (
+       echo "GRANT ALL PRIVILEGES ON *.* TO 'debian-sys-maint'@'localhost' IDENTIFIED BY '${DEBIAN_SYS_MAINT_PASSWORD}';"
+       echo "quit"
+       ) |
+       mysql
+   fi
+   
+   # Set debian-sys-maint password
+   update_user_password debian-sys-maint ${DEBIAN_SYS_MAINT_PASSWORD}
+   sed -i 's,password\ \=\ .*,password\ \=\ '${DEBIAN_SYS_MAINT_PASSWORD}',g' /etc/mysql/debian.cnf
+
+   (
+   echo "CREATE DATABASE IF NOT EXISTS rundeckdb;"
+   echo "GRANT SELECT, INSERT, UPDATE, DELETE, DROP, CREATE, CREATE VIEW, ALTER, INDEX, EXECUTE ON rundeckdb.* TO 'rundeck'@'localhost' IDENTIFIED BY '${RUNDECK_PASSWORD}';"
+   echo "quit"
+   ) |
+   mysql
+   sleep 5
+   /etc/init.d/mysql stop
+   sed -i 's,grails.serverURL\=.*,grails.serverURL\='${SERVER_URL}',g' /etc/rundeck/rundeck-config.properties
+   sed -i 's,dataSource.dbCreate.*,,g' /etc/rundeck/rundeck-config.properties
+   sed -i 's,dataSource.url = .*,dataSource.url = '${DATABASE_URL}',g' /etc/rundeck/rundeck-config.properties
+   echo "dataSource.username = rundeck" >> /etc/rundeck/rundeck-config.properties
+   echo "dataSource.password = ${RUNDECK_PASSWORD}" >> /etc/rundeck/rundeck-config.properties
+
+echo -e "\n\n\n"
+echo "==================================================================="
+echo "MySQL user 'root' has no password but only allows local connections"
+echo "MySQL user 'rundeck' password set to ${RUNDECK_PASSWORD}"
+echo "Rundeck public key:"
+cat /var/lib/rundeck/.ssh/id_rsa.pub
+echo "Server URL set to ${SERVER_URL}"
+echo "==================================================================="
+
+touch ${initfile}
+fi
+
+echo "Starting Supervisor.  You can safely CTRL-C and the container will continue to run with or without the -d (daemon) option"
+/usr/bin/supervisord >> /dev/null
