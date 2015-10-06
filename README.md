@@ -4,7 +4,7 @@ Docker Image for Rundeck
 This is the source repository of [docker image][11] for [Rundeck][7].
 
 
-## A few details: 
+__A few details:__
 
 - This image is based on debian:wheezy
 - Installs Supervisor, Apache2, and rundeck
@@ -15,25 +15,26 @@ This is the source repository of [docker image][11] for [Rundeck][7].
 - Random errros with downloads, while building the Docker image from web. If you are testing locally, it's always good to have the binary downloaded and supplied directly.
 
 
-## Build Process
+__Build Process__
 
 ```
-docker pull bhalothia/docker-rundeck:v1
+docker pull bhalothia/docker-rundeck:v1.1
 ```
-> Above step will pull the image version 1 - which is the latest as well.
+> Above step will pull the image version 1.1 - which is the latest as well.
 
 
-# Usage
+__Usage__
+
 Start a new container and bind to host's port 4440
 
 ```
-sudo docker run -p 4440:4440 -e SERVER_URL=http://MY.HOSTNAME.COM:4440 -t bhalothia/docker-rundeck:v1
+sudo docker run -p 4440:4440 -e SERVER_URL=http://MY.HOSTNAME.COM:4440 -t bhalothia/docker-rundeck:v1.1
 ```
 
 **Note**: If you are using docker-machine, then you need to do find out the docker-machine ip and pass it as the SERVER_URL
 
 
-# Environment variables
+__Environment variables__
 
 ```
 SERVER_URL - Full URL in the form http://MY.HOSTNAME.COM:4440, http//123.456.789.012:4440, etc
@@ -45,7 +46,7 @@ RUNDECK_PASSWORD - MySQL 'rundeck' user password
 DEBIAN_SYS_MAINT_PASSWORD
 ```
 
-# Volumes
+__Volumes__
 
 ```
 /etc/rundeck
