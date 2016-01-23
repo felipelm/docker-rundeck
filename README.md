@@ -1,6 +1,8 @@
 Docker Image for Rundeck
 ========================
 
+[![](https://badge.imagelayers.io/bhalothia/docker-rundeck:latest.svg)](https://imagelayers.io/?images=bhalothia/docker-rundeck:latest 'Get your own badge on imagelayers.io')
+
 This is the source repository of [docker image][11] for [Rundeck][7].
 
 
