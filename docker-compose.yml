@@ -1,0 +1,34 @@
+---
+
+version: '2'
+services:
+
+  rundeck:
+    restart: always
+    image: rundeck
+    ports:
+      - 4440:4440
+    environment:
+      - SERVER_URL=http://$HOSTNAME:4440
+      - DATABASE_URL=jdbc:mysql://mysql:3306/rundeck?autoReconnect=true
+      - RUNDECK_PASSWORD=lite-nard-guardian-woke-pageboy
+    links:
+      - mysql
+    volumes:
+      - ./data/projects:/var/rundeck/projects:rw
+      - ./data/keys:/var/lib/rundeck_ssh:ro
+  mysql:
+    restart: always
+    image: mariadb:5.5.54
+    command: mysqld --innodb-buffer-pool-size=20M
+    environment:
+      - MYSQL_ROOT_PASSWORD=minatory-unbosom-dance-ravel-buddhism
+      - MYSQL_DATABASE=rundeck
+      - MYSQL_USER=rundeck
+      - MYSQL_PASSWORD=lite-nard-guardian-woke-pageboy
+    volumes:
+      - ./data/mysql:/var/lib/mysql:rw
+    expose:
+      - 3306
+
+...
