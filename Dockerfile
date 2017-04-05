@@ -29,9 +29,9 @@ ADD prerequisites/ /
 RUN dpkg -i /tmp/rundeck.deb &&\
     rm /tmp/rundeck.deb &&\
     chown rundeck:rundeck /tmp/rundeck &&\
-    chmod u+x /opt/run &&\
+    chmod u+x /opt/entrypoint.sh &&\
     mkdir -p $RDECK_BASE/.ssh &&\
     chown rundeck:rundeck $RDECK_BASE/.ssh
 
 # Start rundeck
-ENTRYPOINT ["/opt/run"]
+ENTRYPOINT ["/opt/entrypoint.sh"]

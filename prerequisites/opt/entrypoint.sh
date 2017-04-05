@@ -21,11 +21,6 @@ if [ ! -f "${initfile}" ]; then
    RUNDECK_PASSWORD=${RUNDECK_PASSWORD:-$(pwgen -s 15 1)}
 
    echo "=>Initializing rundeck - This may take a few minutes"
-   if [ ! -f /var/lib/rundeck/.ssh/id_rsa ]; then
-       echo "=>Generating rundeck key"
-       sudo -u rundeck ssh-keygen -t rsa -f /var/lib/rundeck/.ssh/id_rsa -N ''
-   fi
-
    if [ "$(ls -A /etc/rundeck)" ]; then
        echo "=>/etc/rundeck check OK"
    else
