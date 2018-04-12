@@ -21,13 +21,15 @@ if [ ! -f "${initfile}" ]; then
    RUNDECK_PASSWORD=${RUNDECK_PASSWORD:-$(pwgen -s 15 1)}
 
    echo "=>Initializing rundeck - This may take a few minutes"
-   if [ "$(ls -A /etc/rundeck)" ]; then
-       echo "=>/etc/rundeck check OK"
-   else
-       echo "=>/etc/rundeck empty...setting up defaults"
-       cp -R /opt/rundeck-properties/* /etc/rundeck
-       chown -R rundeck:rundeck /etc/rundeck
-   fi
+#    if [ "$(ls -A /etc/rundeck)" ]; then
+#        echo "=>/etc/rundeck check OK"
+#    else
+#        echo "=>/etc/rundeck empty...setting up defaults"
+#        cp -R /opt/rundeck-properties/* /etc/rundeck
+#        chown -R rundeck:rundeck /etc/rundeck
+#    fi
+    cp -R /opt/rundeck-properties/* /etc/rundeck
+    chown -R rundeck:rundeck /etc/rundeck
 
 # Copy all plugins that are available on top of default and chowing those
 
