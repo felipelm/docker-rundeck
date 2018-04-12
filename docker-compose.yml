@@ -12,11 +12,14 @@ services:
       - SERVER_URL=http://localhost:4440
       - DATABASE_URL=jdbc:mysql://mysql:3306/rundeck?autoReconnect=true
       - RUNDECK_PASSWORD=lite-nard-guardian-woke-pageboy
+      #- LOGIN_MODULE=ldap
+      #- JAAS_CONF=/opt/rundeck-properties/jaas-ldap.conf
     links:
       - mysql
     volumes:
       - ./data/projects:/var/rundeck/projects:rw
       - ./data/keys:/var/lib/rundeck_ssh:ro
+      - ./prerequisites/opt:/opt
   mysql:
     restart: always
     image: mariadb:latest
