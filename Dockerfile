@@ -3,26 +3,14 @@
 # https://github.com/bhalothia/docker-rundeck
 # RunDeck plugins from https://github.com/rundeck-plugins
 
-FROM debian:wheezy
-MAINTAINER Virendra Singh Bhalothia <bhalothia@theremotelab.com>
+FROM ubuntu
+MAINTAINER Felipe Machado <felipe@linea.gov.br>
+RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
+    libglib2.0-0 libxext6 libsm6 libxrender1 git
+RUN apt-get install openjdk-8-jdk -y
+RUN apt-get install -y openssh-client uuid-runtime
 
-ENV RDECK_BASE /var/lib/rundeck
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update &&\
-    apt-get -qqy upgrade &&\
-    apt-get -qqy install --no-install-recommends bash\
-                                                 procps\
-                                                 sudo\
-                                                 ca-certificates\
-                                                 openjdk-7-jre-headless\
-                                                 openssh-client\
-                                                 pwgen\
-                                                 curl\
-                                                 git\
-                                                 uuid-runtime &&\
-    apt-get clean
-
-ADD http://dl.bintray.com/rundeck/rundeck-deb/rundeck-2.7.3-1-GA.deb /tmp/rundeck.deb
+ADD http://dl.bintray.com/rundeck/rundeck-deb/rundeck_2.10.8-1-GA_all.deb /tmp/rundeck.deb
 
 ADD prerequisites/ /
 
