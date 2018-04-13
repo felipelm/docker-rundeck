@@ -6,6 +6,7 @@ services:
   rundeck:
     restart: always
     build: .
+    command: ./opt/entrypoint.sh
     ports:
       - 4440:4440
     environment:
